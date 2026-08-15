@@ -4,6 +4,7 @@ const http = require('http');
 const fs = require('fs');
 const path = require('path');
 
+// Local development entrypoint. Production uses Vercel's static output and /api.
 const PORT = process.env.PORT || 3000;
 const ROOT = path.resolve(__dirname, '..');
 const PUBLIC_DIR = path.join(ROOT, 'public');
