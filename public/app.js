@@ -43,6 +43,13 @@ const state = {
 const $ = (id) => document.getElementById(id);
 const scene3d = initScene($('scene'), { onHD: handleHD });
 
+// Scena buduje się pod intro (dzięki temu jest gotowa, zanim film się skończy),
+// ale nie ma sensu jej renderować, dopóki zasłania ją film.
+if (document.documentElement.classList.contains('intro-active')) {
+  scene3d.setPaused(true);
+  document.addEventListener('intro:end', () => scene3d.setPaused(false), { once: true });
+}
+
 // ---- path-traced "Render HD" button ---------------------------------------
 function handleHD(s) {
   const btn = $('hd-btn');
