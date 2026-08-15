@@ -344,3 +344,137 @@ textarea:focus, input[type="text"]:focus, input[type="email"]:focus {
   .panel { padding: 20px; }
   .contact-grid { grid-template-columns: 1fr; }
 }
+
+/* ---------- Intro promo overlay ---------- */
+/* Domyślnie ukryte. Klasę na <html> nadaje intro.js przed pierwszym malowaniem;
+   bez JS overlay nigdy się nie pojawi, więc nie da się zablokować strony. */
+.intro { display: none; }
+.intro-active .intro,
+.intro-leaving .intro { display: block; }
+
+.intro-active,
+.intro-active body { overflow: hidden; }
+
+.intro {
+  position: fixed;
+  inset: 0;
+  z-index: 100;
+  /* Czysta czerń, jak plansza końcowa filmu: pasy przy kadrowaniu „cała klatka"
+     są niewidoczne, a wygaszenie czyta się jako jeden ruch */
+  background: #000;
+  opacity: 1;
+  transition: opacity 520ms ease;   /* FADE_MS w intro.js */
+}
+.intro-leaving .intro { opacity: 0; pointer-events: none; }
+
+.intro-video {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  cursor: pointer;
+  transition: transform 520ms cubic-bezier(0.22, 0.61, 0.36, 1);
+}
+.intro-leaving .intro-video { transform: scale(1.03); }
+
+/* Poniżej proporcji 3:4 kadrowanie zaczyna wchodzić w napis końcowy — wtedy
+   pokazujemy całą klatkę na czarnym tle zamiast ją przycinać. */
+@media (max-aspect-ratio: 3/4) {
+  .intro-video { object-fit: contain; }
+}
+
+/* Przyciemnienie góry i dołu — materiał jest jasny, przyciski muszą być czytelne */
+.intro-scrim {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background:
+    linear-gradient(to bottom, rgba(8, 6, 5, 0.5), transparent 20%),
+    linear-gradient(to top, rgba(8, 6, 5, 0.5), transparent 20%);
+}
+
+.intro-btn {
+  position: absolute;
+  font-family: inherit;
+  font-size: 13px;
+  font-weight: 500;
+  letter-spacing: 0.06em;
+  color: #f6f1ea;
+  background: rgba(14, 11, 9, 0.5);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 999px;
+  padding: 10px 18px;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  transition: background 180ms ease, border-color 180ms ease, transform 180ms ease;
+}
+.intro-btn:hover { background: rgba(14, 11, 9, 0.8); border-color: rgba(255, 255, 255, 0.36); }
+.intro-btn:active { transform: translateY(1px); }
+.intro-btn:focus-visible { outline: 2px solid #e8b985; outline-offset: 3px; }
+
+.intro-skip { top: 22px; right: 22px; }
+.intro-sound { left: 22px; bottom: 30px; }
+
+/* Ikona głośnika przełącza się stanem przycisku, nie skryptem */
+.intro-sound .ico-loud { display: none; }
+.intro-sound[aria-pressed='true'] .ico-muted { display: none; }
+.intro-sound[aria-pressed='true'] .ico-loud { display: block; }
+
+/* Plansza startowa: gdy przeglądarka zablokuje autoodtwarzanie
+   albo widz prosi o ograniczenie ruchu */
+.intro-play {
+  position: absolute;
+  inset: 0;
+  margin: auto;
+  width: 96px;
+  height: 96px;
+  border-radius: 50%;
+  display: none;
+  place-items: center;
+  padding-left: 6px;   /* optyczne wyśrodkowanie trójkąta */
+  color: #f6f1ea;
+  background: rgba(14, 11, 9, 0.5);
+  border: 1px solid rgba(255, 255, 255, 0.28);
+  cursor: pointer;
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  transition: background 180ms ease, transform 180ms ease;
+}
+.intro-play:hover { background: rgba(14, 11, 9, 0.8); transform: scale(1.04); }
+.intro-play:focus-visible { outline: 2px solid #e8b985; outline-offset: 4px; }
+.intro.is-idle .intro-play { display: grid; }
+.intro.is-idle .intro-sound { display: none; }
+
+.intro-progress {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 3px;
+  background: rgba(255, 255, 255, 0.16);
+}
+.intro-progress i {
+  display: block;
+  height: 100%;
+  background: #d29a63;
+  transform: scaleX(0);
+  transform-origin: left;
+}
+
+@media (max-width: 480px) {
+  .intro-btn { font-size: 12px; padding: 9px 15px; }
+  .intro-skip { top: 14px; right: 14px; }
+  .intro-sound { left: 14px; bottom: 22px; }
+  .intro-play { width: 78px; height: 78px; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .intro { transition-duration: 200ms; }
+  .intro-video { transition: none; }
+  .intro-leaving .intro-video { transform: none; }
+  .intro-play:hover { transform: none; }
+}

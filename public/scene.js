@@ -422,7 +422,12 @@ export function initScene(container, opts = {}) {
 
   controls.addEventListener('start', stopHD);   // any orbit/zoom cancels HD
 
+  // Wstrzymane, gdy scenę i tak zasłania coś na pełnym ekranie (intro promocyjne):
+  // dekoder wideo dostaje wtedy GPU dla siebie.
+  let paused = false;
+
   renderer.setAnimationLoop(() => {
+    if (paused) return;
     if (ptActive) {
       try {
         if (pathTracer.samples < PT_MAX) {
@@ -444,6 +449,7 @@ export function initScene(container, opts = {}) {
     update(state) { stopHD(); update(state); },
     startHD,
     stopHD,
+    setPaused(v) { paused = v; if (!paused) resize(); },
   };
 }
 

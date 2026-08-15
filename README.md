@@ -35,6 +35,24 @@ Następnie otwórz **http://localhost:3000**
 - Szacowana cena (regał: objętość × stawka m³; blat: powierzchnia × stawka m² + obróbka).
 - Komentarz oraz opcjonalne dane kontaktowe.
 
+## Intro promocyjne
+
+Przy pierwszym wejściu w danej sesji przeglądarki stronę przykrywa film
+`public/media/sobczak-promo.mp4` (16 s). Startuje wyciszony — przeglądarki
+blokują autoodtwarzanie z dźwiękiem — z przyciskiem „Włącz dźwięk". Zamyka go
+przycisk „Pomiń", klawisz Esc albo koniec materiału; wtedy odsłania się
+konfigurator. Kolejne wejścia w tej samej sesji pomijają film i nie pobierają go.
+
+Wymiana materiału — źródło z montażu bywa w HEVC, którego Chrome i Firefox nie
+odtworzą, więc trzeba je przekodować (skrypt zapisuje też plakat `.jpg`):
+
+```bash
+swift scripts/transcode-promo.swift Sobczak_promo_final.mov public/media/sobczak-promo.mp4 2200
+```
+
+Ostatni argument to bitrate w kb/s. Ustawienia intro (klucz sesji, czasy)
+znajdują się na początku `public/intro.js`.
+
 ## Zapis zamówień (dla CRM)
 
 Po złożeniu zamówienia serwer zapisuje w katalogu `data/`:
@@ -49,12 +67,15 @@ Dla regału wypełnione są `height_cm` i `shelves`; dla blatu — `thickness_cm
 ## Struktura
 
 ```
-scripts/serve-local.cjs   # lokalny serwer HTTP (Node wbudowany) + zapis zamówień
-api/order.mjs            # bezstanowy endpoint zamówień dla Vercel
-public/index.html        # interfejs kreatora (importmap dla Three.js)
-public/styles.css        # style
-public/app.js            # formularz, ceny, wysyłka zamówienia
-public/scene.js          # wizualizacja 3D (Three.js) + tekstury drewna
-public/vendor/           # lokalnie zwendorowany Three.js (offline, bez CDN)
-data/                    # zapisane zamówienia (CSV + TXT)
+scripts/serve-local.cjs        # lokalny serwer HTTP (Node wbudowany) + zapis zamówień
+scripts/transcode-promo.swift  # przekodowanie materiału promo do H.264 + plakat
+api/order.mjs                  # bezstanowy endpoint zamówień dla Vercel
+public/index.html              # interfejs kreatora (importmap dla Three.js)
+public/styles.css              # style
+public/intro.js                # intro promocyjne na wejściu
+public/app.js                  # formularz, ceny, wysyłka zamówienia
+public/scene.js                # wizualizacja 3D (Three.js) + tekstury drewna
+public/media/                  # film promocyjny (H.264) + plakat
+public/vendor/                 # lokalnie zwendorowany Three.js (offline, bez CDN)
+data/                          # zapisane zamówienia (CSV + TXT)
 ```

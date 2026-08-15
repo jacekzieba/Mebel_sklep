@@ -55,6 +55,13 @@ const MIME = {
   '.svg': 'image/svg+xml',
   '.ico': 'image/x-icon',
   '.json': 'application/json; charset=utf-8',
+  '.mp4': 'video/mp4',
+  '.webm': 'video/webm',
+  '.mov': 'video/quicktime',
+  '.jpg': 'image/jpeg',
+  '.jpeg': 'image/jpeg',
+  '.png': 'image/png',
+  '.webp': 'image/webp',
 };
 
 fs.mkdirSync(DATA_DIR, { recursive: true });
@@ -251,14 +258,46 @@ function serveStatic(req, res) {
     return res.end('Forbidden');
   }
 
-  fs.readFile(filePath, (err, data) => {
-    if (err) {
+  fs.stat(filePath, (err, stat) => {
+    if (err || !stat.isFile()) {
       res.writeHead(404, { 'Content-Type': 'text/plain; charset=utf-8' });
       return res.end('Nie znaleziono.');
     }
-    const ext = path.extname(filePath).toLowerCase();
-    res.writeHead(200, { 'Content-Type': MIME[ext] || 'application/octet-stream' });
-    res.end(data);
+
+    const type = MIME[path.extname(filePath).toLowerCase()] || 'application/octet-stream';
+    const range = req.headers.range;
+
+    // Zapytania zakresowe — bez nich Safari nie odtworzy wideo, a przewijanie
+    // wymagałoby pobrania całego pliku. Na produkcji robi to za nas Vercel.
+    if (range) {
+      const m = /^bytes=(\d*)-(\d*)$/.exec(range.trim());
+      if (m && (m[1] || m[2])) {
+        let start = m[1] ? Number(m[1]) : stat.size - Number(m[2]);
+        let end = m[1] && m[2] ? Number(m[2]) : stat.size - 1;
+        start = Math.max(0, start);
+        end = Math.min(end, stat.size - 1);
+
+        if (start > end) {
+          res.writeHead(416, { 'Content-Range': `bytes */${stat.size}` });
+          return res.end();
+        }
+
+        res.writeHead(206, {
+          'Content-Type': type,
+          'Content-Range': `bytes ${start}-${end}/${stat.size}`,
+          'Content-Length': end - start + 1,
+          'Accept-Ranges': 'bytes',
+        });
+        return fs.createReadStream(filePath, { start, end }).pipe(res);
+      }
+    }
+
+    res.writeHead(200, {
+      'Content-Type': type,
+      'Content-Length': stat.size,
+      'Accept-Ranges': 'bytes',
+    });
+    fs.createReadStream(filePath).pipe(res);
   });
 }
 
