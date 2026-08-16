@@ -41,7 +41,15 @@ Przy pierwszym wejściu w danej sesji przeglądarki stronę przykrywa film
 `public/media/sobczak-promo.mp4` (16 s). Startuje wyciszony — przeglądarki
 blokują autoodtwarzanie z dźwiękiem — z przyciskiem „Włącz dźwięk". Zamyka go
 przycisk „Pomiń", klawisz Esc albo koniec materiału; wtedy odsłania się
-konfigurator. Kolejne wejścia w tej samej sesji pomijają film i nie pobierają go.
+konfigurator.
+
+Fakt obejrzenia zapisuje `sessionStorage` (klucz `sobczak:intro-seen`), więc
+pamięć sięga dokładnie tak daleko, jak jedna karta przeglądarki: odświeżenie
+strony filmu nie powtarza, ale nowa karta, nowe okno, tryb incognito, inna
+przeglądarka i inne urządzenie widzą go od nowa. Nic nie trafia do
+`localStorage` ani do ciasteczek, więc nie da się tego przenieść między
+urządzeniami. Przy wyłączonym magazynie danych film odtwarza się przy każdym
+wejściu.
 
 Wymiana materiału — źródło z montażu bywa w HEVC, którego Chrome i Firefox nie
 odtworzą, więc trzeba je przekodować (skrypt zapisuje też plakat `.jpg`):
